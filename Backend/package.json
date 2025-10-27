@@ -1,0 +1,41 @@
+{
+  "name": "peacenest-backend",
+  "version": "1.0.0",
+  "description": "API backend para PeaceNest - Herramientas para la Relajación y Bienestar Mental",
+  "main": "src/server.js",
+  "scripts": {
+    "dev": "nodemon src/server.js",
+    "start": "node src/server.js",
+    "lint": "eslint ."
+  },
+  "keywords": [
+    "peacenest",
+    "wellness",
+    "meditation",
+    "mental-health",
+    "firebase",
+    "nodejs"
+  ],
+  "author": "PeaceNest Team",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "firebase-admin": "^11.11.0",
+    "jsonwebtoken": "^9.0.2",
+    "bcrypt": "^5.1.1",
+    "dotenv": "^16.3.1",
+    "cors": "^2.8.5",
+    "swagger-ui-express": "^5.0.0",
+    "express-validator": "^7.0.1",
+    "morgan": "^1.10.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1",
+    "eslint": "^8.51.0",
+    "prettier": "^3.0.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
+
