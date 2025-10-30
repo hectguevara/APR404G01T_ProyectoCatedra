@@ -6,9 +6,8 @@ import androidx.activity.compose.setContent
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
-import androidx.navigation.compose.rememberNavController
 import com.example.peacenest.data.ThemePreferences
-import com.example.peacenest.navigation.AppNavHost
+import com.example.peacenest.navigation.MainApp
 import com.example.peacenest.ui.theme.PeacenestTheme
 
 class MainActivity : ComponentActivity() {
@@ -16,7 +15,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         // Cargar preferencias de tema
         ThemePreferences.loadTheme(this)
-        
+
         setContent {
             PeacenestTheme {
                 Surface(color = MaterialTheme.colorScheme.background) {
@@ -29,6 +28,6 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun App() {
-    val navController = rememberNavController()
-    AppNavHost(navController = navController)
+    // Muestra directamente la app con la barra de navegación
+    MainApp()
 }

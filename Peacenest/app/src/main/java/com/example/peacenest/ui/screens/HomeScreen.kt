@@ -1,4 +1,4 @@
-package com.example.peacenest.ui.home
+package com.example.peacenest.ui.screens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -65,6 +65,7 @@ fun HomeScreen(navController: NavController) {
         )
     }
 
+    // QUITAMOS el bottomBar del Scaffold del HomeScreen
     Scaffold(
         topBar = {
             TopAppBar(
@@ -95,6 +96,7 @@ fun HomeScreen(navController: NavController) {
                 )
             )
         }
+        // SE ELIMINÓ EL bottomBar AQUÍ
     ) { padding ->
         Column(
             modifier = Modifier
@@ -132,36 +134,36 @@ fun HomeScreen(navController: NavController) {
                 description = "Ejercicios guiados de respiración",
                 onClick = { navController.navigate(Routes.Breathing.route) }
             )
-            
+
             Spacer(Modifier.height(12.dp))
-            
+
             FeatureCard(
                 icon = "🧘",
                 title = "Meditación",
                 description = "Sesiones de meditación guiada",
                 onClick = { navController.navigate(Routes.Meditation.route) }
             )
-            
+
             Spacer(Modifier.height(12.dp))
-            
+
             FeatureCard(
                 icon = "🎵",
                 title = "Audios Relajantes",
                 description = "Música y sonidos para relajarte",
                 onClick = { navController.navigate(Routes.Audios.route) }
             )
-            
+
             Spacer(Modifier.height(12.dp))
-            
+
             FeatureCard(
                 icon = "📚",
                 title = "Artículos",
                 description = "Consejos sobre bienestar y salud mental",
                 onClick = { navController.navigate(Routes.Articles.route) }
             )
-            
+
             Spacer(Modifier.height(12.dp))
-            
+
             FeatureCard(
                 icon = "📊",
                 title = "Seguimiento Personal",
@@ -215,9 +217,9 @@ fun FeatureCard(
                     )
                 }
             }
-            
+
             Spacer(Modifier.width(16.dp))
-            
+
             // Texto
             Column(modifier = Modifier.weight(1f)) {
                 Text(

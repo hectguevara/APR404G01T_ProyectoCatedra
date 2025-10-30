@@ -1,42 +1,36 @@
 package com.example.peacenest.navigation
 
-import androidx.compose.runtime.Composable
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import com.example.peacenest.ui.auth.LoginScreen
-import com.example.peacenest.ui.auth.RegisterScreen
-import com.example.peacenest.ui.home.HomeScreen
-import com.example.peacenest.ui.breathing.BreathingScreen
-import com.example.peacenest.ui.meditation.MeditationScreen
-import com.example.peacenest.ui.audios.AudiosScreen
-import com.example.peacenest.ui.articles.ArticlesScreen
-import com.example.peacenest.ui.tracking.TrackingScreen
-import com.example.peacenest.ui.settings.SettingsScreen
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.ui.graphics.vector.ImageVector
 
-sealed class Routes(val route: String) {
-    object Login : Routes("login")
-    object Register : Routes("register")
-    object Home : Routes("home")
-    object Breathing : Routes("breathing")
-    object Meditation : Routes("meditation")
-    object Audios : Routes("audios")
-    object Articles : Routes("articles")
-    object Tracking : Routes("tracking")
-    object Settings : Routes("settings")
-}
+sealed class Routes(val route: String, val title: String, val icon: ImageVector) {
+    object Login : Routes("login", "Login", Icons.Default.Home)
+    object Register : Routes("register", "Registro", Icons.Default.Home)
+    object Home : Routes("home", "Inicio", Icons.Default.Home)
+    object Diario : Routes("diario", "Diario", Icons.Default.Edit)
+    object Bienestar : Routes("breathing", "Bienestar", Icons.Default.Favorite) // RUTA CAMBIADA A "breathing"
+    object Menu : Routes("menu", "Menú", Icons.Default.Menu)
+    object Perfil : Routes("perfil", "Perfil", Icons.Default.Person)
+    object Breathing : Routes("breathing", "Respiración", Icons.Default.Home)
+    object Meditation : Routes("meditation", "Meditación", Icons.Default.Home)
+    object Audios : Routes("audios", "Audios", Icons.Default.Home)
+    object Articles : Routes("articles", "Artículos", Icons.Default.Home)
+    object Tracking : Routes("tracking", "Seguimiento", Icons.Default.Home)
+    object Settings : Routes("settings", "Ajustes", Icons.Default.Home)
 
-@Composable
-fun AppNavHost(navController: NavHostController) {
-    NavHost(navController = navController, startDestination = Routes.Login.route) {
-        composable(Routes.Login.route) { LoginScreen(navController) }
-        composable(Routes.Register.route) { RegisterScreen(navController) }
-        composable(Routes.Home.route) { HomeScreen(navController) }
-        composable(Routes.Breathing.route) { BreathingScreen(navController) }
-        composable(Routes.Meditation.route) { MeditationScreen(navController) }
-        composable(Routes.Audios.route) { AudiosScreen(navController) }
-        composable(Routes.Articles.route) { ArticlesScreen(navController) }
-        composable(Routes.Tracking.route) { TrackingScreen(navController) }
-        composable(Routes.Settings.route) { SettingsScreen(navController) }
+    // Items que estarán en la barra de navegación
+    companion object {
+        val bottomNavItems = listOf(
+            Home,
+            Diario,
+            Bienestar,
+            Menu,
+            Perfil
+        )
     }
 }
