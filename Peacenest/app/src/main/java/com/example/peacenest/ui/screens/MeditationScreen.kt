@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
@@ -20,7 +19,7 @@ import com.example.peacenest.navigation.Routes
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BreathingScreen(navController: NavController) {
+fun MeditationScreen(navController: NavController) {
     var showLogoutDialog by remember { mutableStateOf(false) }
 
     // Diálogo de confirmación de cerrar sesión
@@ -94,12 +93,10 @@ fun BreathingScreen(navController: NavController) {
             )
         }
     ) { padding ->
-        // CAMBIO IMPORTANTE: Usar Column sin verticalScroll
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-            // ELIMINAR: .verticalScroll(rememberScrollState())
         ) {
             // Header con bloque de color
             Box(
@@ -111,72 +108,77 @@ fun BreathingScreen(navController: NavController) {
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
-                        "Técnicas de Respiración",
+                        "Meditaciones Guiadas",
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onPrimary
                     )
                     Text(
-                        "Ejercicios para calmar tu mente y cuerpo",
+                        "Encuentra paz interior y claridad mental",
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f)
                     )
                 }
             }
 
-            // Contenido principal - LazyColumn se encarga del scroll
-            BreathingTechniquesList(navController = navController)
+            // Contenido principal
+            MeditationSessionsList(navController = navController)
         }
     }
 }
 
 @Composable
-fun BreathingTechniquesList(navController: NavController) {
-    val breathingTechniques = listOf(
-        BreathingTechnique(
+fun MeditationSessionsList(navController: NavController) {
+    val meditationSessions = listOf(
+        MeditationSession(
             id = "1",
-            name = "Respiración 4-7-8",
-            shortDescription = "Técnica para conciliar el sueño y reducir ansiedad",
-            emoji = "😴",
-            duration = "5 min",
+            title = "Meditación para Relajación Profunda",
+            description = "Sesión guiada para liberar tensión y encontrar calma",
+            emoji = "😌",
+            duration = "15 min",
             level = "Principiante",
-            benefits = listOf("Reduce ansiedad", "Mejora el sueño", "Calma la mente")
+            type = "youtube",
+            benefits = listOf("Reduce estrés", "Mejora calidad de sueño", "Calma la mente")
         ),
-        BreathingTechnique(
+        MeditationSession(
             id = "2",
-            name = "Respiración Cuadrada",
-            shortDescription = "Ejercicio de equilibrio y concentración",
-            emoji = "⬜",
-            duration = "3 min",
-            level = "Intermedio",
-            benefits = listOf("Mejora concentración", "Equilibra energía", "Reduce estrés")
-        ),
-        BreathingTechnique(
-            id = "3",
-            name = "Respiración Diafragmática",
-            shortDescription = "Técnica profunda para relajación completa",
-            emoji = "🌊",
-            duration = "7 min",
-            level = "Principiante",
-            benefits = listOf("Relajación profunda", "Mejora oxigenación", "Calma sistema nervioso")
-        ),
-        BreathingTechnique(
-            id = "4",
-            name = "Respiración Alternada",
-            shortDescription = "Balance energético entre hemisferios cerebrales",
+            title = "Mindfulness para Ansiedad",
+            description = "Técnicas de atención plena para manejar la ansiedad",
             emoji = "🌀",
-            duration = "4 min",
-            level = "Avanzado",
-            benefits = listOf("Balance energético", "Claridad mental", "Armonía interior")
+            duration = "10 min",
+            level = "Intermedio",
+            type = "mindfulness",
+            benefits = listOf("Reduce ansiedad", "Aumenta conciencia", "Mejora enfoque")
         ),
-        BreathingTechnique(
+        MeditationSession(
+            id = "3",
+            title = "Meditación con Sonidos de Naturaleza",
+            description = "Inmersión en sonidos naturales para meditación profunda",
+            emoji = "🌿",
+            duration = "20 min",
+            level = "Principiante",
+            type = "pixabay",
+            benefits = listOf("Conecta con naturaleza", "Relajación profunda", "Armonía interior")
+        ),
+        MeditationSession(
+            id = "4",
+            title = "Meditación para Concentración",
+            description = "Mejora tu enfoque y claridad mental",
+            emoji = "🎯",
+            duration = "12 min",
+            level = "Intermedio",
+            type = "youtube",
+            benefits = listOf("Mejora concentración", "Claridad mental", "Productividad")
+        ),
+        MeditationSession(
             id = "5",
-            name = "Respiración de Fuego",
-            shortDescription = "Ejercicio energizante y purificador",
-            emoji = "🔥",
-            duration = "2 min",
+            title = "Meditación Amorosa Bondad",
+            description = "Cultiva compasión hacia ti mismo y los demás",
+            emoji = "💖",
+            duration = "18 min",
             level = "Avanzado",
-            benefits = listOf("Energiza", "Purifica", "Fortalece pulmones")
+            type = "mindfulness",
+            benefits = listOf("Desarrolla compasión", "Mejora relaciones", "Bienestar emocional")
         )
     )
 
@@ -186,21 +188,31 @@ fun BreathingTechniquesList(navController: NavController) {
             .padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        items(breathingTechniques) { technique ->
-            BreathingTechniqueCard(
-                technique = technique,
+        items(meditationSessions) { session ->
+            MeditationSessionCard(
+                session = session,
                 onCardClick = {
-                    // Navegar a detalle de la técnica
+                    // Navegar a reproductor según el tipo
+                    when (session.type) {
+                        "youtube" -> {
+                            // navController.navigate("${Routes.MeditationPlayer.route}/${session.id}")
+                        }
+                        "pixabay" -> {
+                            // navController.navigate("${Routes.AudioPlayer.route}/${session.id}")
+                        }
+                        "mindfulness" -> {
+                            // navController.navigate("${Routes.Mindfulness.route}/${session.id}")
+                        }
+                    }
                 }
             )
         }
     }
 }
 
-// El resto del código se mantiene igual...
 @Composable
-fun BreathingTechniqueCard(
-    technique: BreathingTechnique,
+fun MeditationSessionCard(
+    session: MeditationSession,
     onCardClick: () -> Unit
 ) {
     Card(
@@ -236,7 +248,7 @@ fun BreathingTechniqueCard(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            technique.emoji,
+                            session.emoji,
                             style = MaterialTheme.typography.headlineMedium
                         )
                     }
@@ -249,13 +261,13 @@ fun BreathingTechniqueCard(
                     modifier = Modifier.weight(1f)
                 ) {
                     Text(
-                        technique.name,
+                        session.title,
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
-                        technique.shortDescription,
+                        session.description,
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
                         modifier = Modifier.padding(top = 4.dp)
@@ -271,15 +283,31 @@ fun BreathingTechniqueCard(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 // Duración
-                InfoChip(
+                MeditationInfoChip(
                     icon = "⏱️",
-                    text = technique.duration
+                    text = session.duration
                 )
 
                 // Nivel
-                InfoChip(
+                MeditationInfoChip(
                     icon = "📊",
-                    text = technique.level
+                    text = session.level
+                )
+
+                // Tipo
+                MeditationInfoChip(
+                    icon = when (session.type) {
+                        "youtube" -> "🎥"
+                        "pixabay" -> "🎵"
+                        "mindfulness" -> "🧠"
+                        else -> "🎯"
+                    },
+                    text = when (session.type) {
+                        "youtube" -> "Video"
+                        "pixabay" -> "Audio"
+                        "mindfulness" -> "Guiada"
+                        else -> "Meditación"
+                    }
                 )
             }
 
@@ -295,7 +323,7 @@ fun BreathingTechniqueCard(
             )
 
             Column {
-                technique.benefits.forEach { benefit ->
+                session.benefits.forEach { benefit ->
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.padding(vertical = 2.dp)
@@ -329,7 +357,7 @@ fun BreathingTechniqueCard(
                 )
             ) {
                 Text(
-                    "Comenzar Ejercicio",
+                    "Comenzar Meditación",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold
                 )
@@ -339,7 +367,7 @@ fun BreathingTechniqueCard(
 }
 
 @Composable
-fun InfoChip(icon: String, text: String) {
+fun MeditationInfoChip(icon: String, text: String) {
     Card(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
@@ -348,7 +376,7 @@ fun InfoChip(icon: String, text: String) {
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp)
         ) {
             Text(
                 icon,
@@ -365,13 +393,14 @@ fun InfoChip(icon: String, text: String) {
     }
 }
 
-// Data class para las técnicas de respiración
-data class BreathingTechnique(
+// Data class para las sesiones de meditación
+data class MeditationSession(
     val id: String,
-    val name: String,
-    val shortDescription: String,
+    val title: String,
+    val description: String,
     val emoji: String,
     val duration: String,
     val level: String,
+    val type: String,
     val benefits: List<String>
 )

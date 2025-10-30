@@ -1,3 +1,4 @@
+// navigation/MainApp.kt
 package com.example.peacenest.navigation
 
 import androidx.compose.material3.Icon
@@ -20,8 +21,13 @@ import androidx.compose.foundation.layout.padding
 import com.example.peacenest.ui.screens.HomeScreen
 import com.example.peacenest.ui.screens.DiarioScreen
 import com.example.peacenest.ui.screens.BreathingScreen
+import com.example.peacenest.ui.screens.DailyTipsScreen
 import com.example.peacenest.ui.screens.MenuScreen
 import com.example.peacenest.ui.screens.PerfilScreen
+import com.example.peacenest.ui.screens.MeditationScreen
+import com.example.peacenest.ui.screens.EducationalScreen
+import com.example.peacenest.ui.screens.FavoritesScreen
+import com.example.peacenest.ui.screens.ShopScreen
 
 @Composable
 fun MainApp() {
@@ -51,6 +57,21 @@ fun MainApp() {
             }
             composable(Routes.Perfil.route) {
                 PerfilScreen(navController = navController)
+            }
+            composable(Routes.Meditation.route) {
+                MeditationScreen(navController = navController)
+            }
+            composable(Routes.Articles.route) {
+                EducationalScreen(navController = navController)
+            }
+            composable(Routes.Shop.route) {
+                ShopScreen(navController = navController)
+            }
+            composable(Routes.DailyTips.route) {
+                DailyTipsScreen(navController = navController)
+            }
+            composable(Routes.Favorites.route) {
+                FavoritesScreen(navController = navController)
             }
         }
     }

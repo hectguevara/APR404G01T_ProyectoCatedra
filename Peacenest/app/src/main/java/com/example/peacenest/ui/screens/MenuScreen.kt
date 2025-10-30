@@ -132,7 +132,7 @@ fun MenuScreen(navController: NavController) {
 fun MenuCategories(navController: NavController) {
     val menuCategories = listOf(
         MenuCategory(
-            title = "🧘‍♀️ Bienestar",
+            title = "Bienestar",
             emoji = "🧘‍♀️",
             items = listOf(
                 MenuItem(
@@ -147,16 +147,10 @@ fun MenuCategories(navController: NavController) {
                     route = Routes.Breathing.route,
                     emoji = "🌬️"
                 ),
-                MenuItem(
-                    name = "Audios Relajantes",
-                    description = "Música y sonidos para relajarte",
-                    route = Routes.Audios.route,
-                    emoji = "🎵"
-                )
             )
         ),
         MenuCategory(
-            title = "📚 Aprendizaje",
+            title = "Aprendizaje",
             emoji = "📚",
             items = listOf(
                 MenuItem(
@@ -167,32 +161,33 @@ fun MenuCategories(navController: NavController) {
                 ),
                 MenuItem(
                     name = "Consejos Diarios",
-                    description = "Inspiración para tu día",
-                    route = Routes.Home.route,
+                    description = "Frases motivacionales e inspiración",
+                    route = Routes.DailyTips.route,
                     emoji = "💡"
                 )
             )
         ),
         MenuCategory(
-            title = "⭐ Personal",
+            title = "Personal",
             emoji = "⭐",
             items = listOf(
+
                 MenuItem(
-                    name = "Mi Progreso",
-                    description = "Estadísticas y logros",
-                    route = Routes.Tracking.route,
-                    emoji = "📊"
+                    name = "Tienda de Frases",
+                    description = "Desbloquea frases motivacionales",
+                    route = Routes.Shop.route,
+                    emoji = "🏪"
                 ),
                 MenuItem(
-                    name = "Seguimiento Personal",
-                    description = "Rastrea tu progreso y emociones",
-                    route = Routes.Tracking.route,
-                    emoji = "📈"
+                    name = "Consejos Favoritos",
+                    description = "Tus frases guardadas",
+                    route = Routes.Favorites.route,
+                    emoji = "❤️"
                 )
             )
         ),
         MenuCategory(
-            title = "⚙️ Configuración",
+            title = "Configuración",
             emoji = "⚙️",
             items = listOf(
                 MenuItem(

@@ -144,14 +144,6 @@ fun HomeScreen(navController: NavController) {
                 onClick = { navController.navigate(Routes.Meditation.route) }
             )
 
-            Spacer(Modifier.height(12.dp))
-
-            FeatureCard(
-                icon = "🎵",
-                title = "Audios Relajantes",
-                description = "Música y sonidos para relajarte",
-                onClick = { navController.navigate(Routes.Audios.route) }
-            )
 
             Spacer(Modifier.height(12.dp))
 
@@ -162,14 +154,6 @@ fun HomeScreen(navController: NavController) {
                 onClick = { navController.navigate(Routes.Articles.route) }
             )
 
-            Spacer(Modifier.height(12.dp))
-
-            FeatureCard(
-                icon = "📊",
-                title = "Seguimiento Personal",
-                description = "Rastrea tu progreso y emociones",
-                onClick = { navController.navigate(Routes.Tracking.route) }
-            )
         }
     }
 }

@@ -13,16 +13,17 @@ sealed class Routes(val route: String, val title: String, val icon: ImageVector)
     object Register : Routes("register", "Registro", Icons.Default.Home)
     object Home : Routes("home", "Inicio", Icons.Default.Home)
     object Diario : Routes("diario", "Diario", Icons.Default.Edit)
-    object Bienestar : Routes("breathing", "Bienestar", Icons.Default.Favorite) // RUTA CAMBIADA A "breathing"
+    object Bienestar : Routes("breathing", "Bienestar", Icons.Default.Favorite)
     object Menu : Routes("menu", "Menú", Icons.Default.Menu)
     object Perfil : Routes("perfil", "Perfil", Icons.Default.Person)
     object Breathing : Routes("breathing", "Respiración", Icons.Default.Home)
     object Meditation : Routes("meditation", "Meditación", Icons.Default.Home)
-    object Audios : Routes("audios", "Audios", Icons.Default.Home)
     object Articles : Routes("articles", "Artículos", Icons.Default.Home)
     object Tracking : Routes("tracking", "Seguimiento", Icons.Default.Home)
     object Settings : Routes("settings", "Ajustes", Icons.Default.Home)
-
+    object Shop : Routes("shop", "Tienda", Icons.Default.Home)
+    object DailyTips : Routes("dailytips", "Consejos Diarios", Icons.Default.Home)
+    object Favorites : Routes("favorites", "Favoritos", Icons.Default.Home)
     // Items que estarán en la barra de navegación
     companion object {
         val bottomNavItems = listOf(

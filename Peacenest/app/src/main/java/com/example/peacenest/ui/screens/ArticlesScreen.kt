@@ -1,4 +1,4 @@
-package com.example.peacenest.ui.articles
+package com.example.peacenest.ui.screens
 
 import android.content.Intent
 import android.net.Uri
