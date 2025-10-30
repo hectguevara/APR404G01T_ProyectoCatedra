@@ -23,7 +23,7 @@ import com.example.peacenest.navigation.Routes
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PerfilScreen(navController: NavController) {
+fun PerfilScreen(navController: NavController, onLogout: () -> Unit = {}) {
     var showLogoutDialog by remember { mutableStateOf(false) }
     var showResetDialog by remember { mutableStateOf(false) }
     var editando by remember { mutableStateOf(false) }
@@ -69,9 +69,7 @@ fun PerfilScreen(navController: NavController) {
                 Button(
                     onClick = {
                         showLogoutDialog = false
-                        navController.navigate(Routes.Login.route) {
-                            popUpTo(0) { inclusive = true }
-                        }
+                        onLogout()
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.primary

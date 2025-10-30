@@ -1,5 +1,7 @@
 package com.example.peacenest.ui.screens
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -27,7 +29,7 @@ import com.example.peacenest.navigation.Routes
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EducationalScreen(navController: NavController) {
+fun EducationalScreen(navController: NavController, onLogout: () -> Unit = {}) {
     var showLogoutDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
@@ -84,9 +86,7 @@ fun EducationalScreen(navController: NavController) {
                 Button(
                     onClick = {
                         showLogoutDialog = false
-                        navController.navigate(Routes.Login.route) {
-                            popUpTo(0) { inclusive = true }
-                        }
+                        onLogout()
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.primary
@@ -179,8 +179,9 @@ fun EducationalScreen(navController: NavController) {
                     ArticleCard(
                         article = article,
                         onReadMore = {
-                            // Aquí iría la lógica para abrir el enlace
-                            // Por ejemplo: context.openUrl(article.articleUrl)
+                            // Abrir el enlace en el navegador
+                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(article.articleUrl))
+                            context.startActivity(intent)
                         }
                     )
                 }

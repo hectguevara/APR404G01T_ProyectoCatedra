@@ -20,17 +20,83 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.peacenest.navigation.Routes
+import com.example.peacenest.network.RetrofitClient
+import com.example.peacenest.network.models.LoginRequest
+import com.example.peacenest.data.TokenManager
+import kotlinx.coroutines.launch
 
 @Composable
 fun LoginScreen(navController: NavController) {
+    val context = androidx.compose.ui.platform.LocalContext.current
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var isLoading by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+    
+    val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
+    
+    // Inicializar TokenManager
+    LaunchedEffect(Unit) {
+        TokenManager.init(context)
+    }
+    
+    // Función para hacer login
+    fun performLogin() {
+        if (email.isBlank() || password.isBlank()) {
+            errorMessage = "Por favor completa todos los campos"
+            return
+        }
+        
+        isLoading = true
+        errorMessage = null
+        
+        scope.launch {
+            try {
+                val request = LoginRequest(email = email, password = password)
+                val response = RetrofitClient.apiService.login(request)
+                
+                if (response.isSuccessful) {
+                    val loginResponse = response.body()
+                    if (loginResponse != null) {
+                        // Guardar token y datos de usuario
+                        TokenManager.saveAuthData(
+                            token = loginResponse.token,
+                            userId = loginResponse.user.uid,
+                            userName = loginResponse.user.name,
+                            userEmail = loginResponse.user.email
+                        )
+                        
+                        // Login exitoso
+                        snackbarHostState.showSnackbar(
+                            message = "¡Bienvenido ${loginResponse.user.name}!",
+                            duration = SnackbarDuration.Short
+                        )
+                        // Navegar a la app principal
+                        navController.navigate("main_app") {
+                            popUpTo(Routes.Login.route) { inclusive = true }
+                        }
+                    }
+                } else {
+                    errorMessage = "Credenciales inválidas"
+                }
+            } catch (e: Exception) {
+                errorMessage = "Error de conexión: ${e.message}"
+            } finally {
+                isLoading = false
+            }
+        }
+    }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-    ) {
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) }
+    ) { paddingValues ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .verticalScroll(rememberScrollState())
+        ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -118,24 +184,50 @@ fun LoginScreen(navController: NavController) {
                         )
                     )
 
-                    Spacer(Modifier.height(24.dp))
+                    Spacer(Modifier.height(16.dp))
+                    
+                    // Mensaje de error
+                    if (errorMessage != null) {
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.errorContainer
+                            )
+                        ) {
+                            Text(
+                                text = errorMessage!!,
+                                modifier = Modifier.padding(12.dp),
+                                color = MaterialTheme.colorScheme.onErrorContainer,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                        Spacer(Modifier.height(16.dp))
+                    }
 
                     // Botón de login
                     Button(
-                        onClick = { navController.navigate(Routes.Home.route) },
+                        onClick = { performLogin() },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(56.dp),
                         shape = RoundedCornerShape(16.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.primary
-                        )
+                        ),
+                        enabled = !isLoading
                     ) {
-                        Text(
-                            "Iniciar Sesión",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
-                        )
+                        if (isLoading) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(24.dp),
+                                color = MaterialTheme.colorScheme.onPrimary
+                            )
+                        } else {
+                            Text(
+                                "Iniciar Sesión",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                     }
                 }
             }
@@ -153,6 +245,7 @@ fun LoginScreen(navController: NavController) {
                     fontWeight = FontWeight.Medium
                 )
             }
+        }
         }
     }
 }

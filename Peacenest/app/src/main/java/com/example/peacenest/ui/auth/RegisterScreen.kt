@@ -22,15 +22,88 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.peacenest.navigation.Routes
+import com.example.peacenest.network.RetrofitClient
+import com.example.peacenest.network.models.RegisterRequest
+import com.example.peacenest.data.TokenManager
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegisterScreen(navController: NavController) {
+    val context = androidx.compose.ui.platform.LocalContext.current
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var isLoading by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+    
+    val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
+    
+    // Inicializar TokenManager
+    LaunchedEffect(Unit) {
+        TokenManager.init(context)
+    }
+    
+    // Función para registrarse
+    fun performRegister() {
+        if (name.isBlank() || email.isBlank() || password.isBlank()) {
+            errorMessage = "Por favor completa todos los campos"
+            return
+        }
+        
+        if (password.length < 6) {
+            errorMessage = "La contraseña debe tener al menos 6 caracteres"
+            return
+        }
+        
+        isLoading = true
+        errorMessage = null
+        
+        scope.launch {
+            try {
+                val request = RegisterRequest(name = name, email = email, password = password)
+                val response = RetrofitClient.apiService.register(request)
+                
+                if (response.isSuccessful) {
+                    val registerResponse = response.body()
+                    if (registerResponse != null) {
+                        // Guardar token y datos de usuario
+                        TokenManager.saveAuthData(
+                            token = registerResponse.token,
+                            userId = registerResponse.user.uid,
+                            userName = registerResponse.user.name,
+                            userEmail = registerResponse.user.email
+                        )
+                        
+                        // Registro exitoso
+                        snackbarHostState.showSnackbar(
+                            message = "¡Cuenta creada exitosamente!",
+                            duration = SnackbarDuration.Short
+                        )
+                        // Navegar a la app principal
+                        navController.navigate("main_app") {
+                            popUpTo(Routes.Register.route) { inclusive = true }
+                        }
+                    }
+                } else {
+                    errorMessage = when (response.code()) {
+                        409 -> "El email ya está registrado"
+                        else -> "Error al crear la cuenta"
+                    }
+                }
+            } catch (e: Exception) {
+                errorMessage = "Error de conexión: ${e.message}"
+            } finally {
+                isLoading = false
+            }
+        }
+    }
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) }
+    ) { paddingValues ->
+        Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
         // Botón de volver
         IconButton(
             onClick = { navController.popBackStack() },
@@ -153,24 +226,50 @@ fun RegisterScreen(navController: NavController) {
                         )
                     )
 
-                    Spacer(Modifier.height(24.dp))
+                    Spacer(Modifier.height(16.dp))
+                    
+                    // Mensaje de error
+                    if (errorMessage != null) {
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.errorContainer
+                            )
+                        ) {
+                            Text(
+                                text = errorMessage!!,
+                                modifier = Modifier.padding(12.dp),
+                                color = MaterialTheme.colorScheme.onErrorContainer,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                        Spacer(Modifier.height(16.dp))
+                    }
 
                     // Botón de registro
                     Button(
-                        onClick = { navController.navigate(Routes.Login.route) },
+                        onClick = { performRegister() },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(56.dp),
                         shape = RoundedCornerShape(16.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.primary
-                        )
+                        ),
+                        enabled = !isLoading
                     ) {
-                        Text(
-                            "Crear Cuenta",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
-                        )
+                        if (isLoading) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(24.dp),
+                                color = MaterialTheme.colorScheme.onPrimary
+                            )
+                        } else {
+                            Text(
+                                "Crear Cuenta",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                     }
                 }
             }
@@ -188,6 +287,7 @@ fun RegisterScreen(navController: NavController) {
                     fontWeight = FontWeight.Medium
                 )
             }
+        }
         }
     }
 }

@@ -20,7 +20,7 @@ import com.example.peacenest.navigation.Routes
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BreathingScreen(navController: NavController) {
+fun BreathingScreen(navController: NavController, onLogout: () -> Unit = {}) {
     var showLogoutDialog by remember { mutableStateOf(false) }
 
     // Diálogo de confirmación de cerrar sesión
@@ -44,9 +44,7 @@ fun BreathingScreen(navController: NavController) {
                 Button(
                     onClick = {
                         showLogoutDialog = false
-                        navController.navigate(Routes.Login.route) {
-                            popUpTo(0) { inclusive = true }
-                        }
+                        onLogout()
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.primary
@@ -190,7 +188,8 @@ fun BreathingTechniquesList(navController: NavController) {
             BreathingTechniqueCard(
                 technique = technique,
                 onCardClick = {
-                    // Navegar a detalle de la técnica
+                    // Navegar al ejercicio de respiración con el ID de la técnica
+                    navController.navigate("${Routes.BreathingExercise.route}/${technique.id}")
                 }
             )
         }

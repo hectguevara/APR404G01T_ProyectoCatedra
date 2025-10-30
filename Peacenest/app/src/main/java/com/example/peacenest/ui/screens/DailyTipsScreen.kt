@@ -25,7 +25,7 @@ import kotlin.random.Random
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DailyTipsScreen(navController: NavController) {
+fun DailyTipsScreen(navController: NavController, onLogout: () -> Unit = {}) {
     var showLogoutDialog by remember { mutableStateOf(false) }
     var currentQuote by remember { mutableStateOf<Quote?>(null) }
     var showSavedConfirmation by remember { mutableStateOf(false) }
@@ -133,9 +133,7 @@ fun DailyTipsScreen(navController: NavController) {
                 Button(
                     onClick = {
                         showLogoutDialog = false
-                        navController.navigate(Routes.Login.route) {
-                            popUpTo(0) { inclusive = true }
-                        }
+                        onLogout()
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.primary

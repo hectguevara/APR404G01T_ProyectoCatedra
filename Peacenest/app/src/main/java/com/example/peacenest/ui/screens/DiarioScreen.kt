@@ -15,13 +15,156 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.peacenest.navigation.Routes
+import com.example.peacenest.data.TokenManager
+import com.example.peacenest.network.RetrofitClient
+import com.example.peacenest.network.models.TrackingRequest
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DiarioScreen(navController: NavController) {
+fun DiarioScreen(navController: NavController, onLogout: () -> Unit = {}) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
+    
     var showLogoutDialog by remember { mutableStateOf(false) }
     var selectedEmotion by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
+    var isLoading by remember { mutableStateOf(false) }
+    var isLoadingHistory by remember { mutableStateOf(false) }
+    var historyEntries by remember { mutableStateOf<List<com.example.peacenest.network.models.TrackingEntry>>(emptyList()) }
+    var refreshTrigger by remember { mutableStateOf(0) }
+    
+    // Inicializar TokenManager
+    LaunchedEffect(Unit) {
+        TokenManager.init(context)
+    }
+    
+    // Cargar historial de emociones
+    LaunchedEffect(refreshTrigger) {
+        isLoadingHistory = true
+        kotlinx.coroutines.delay(500) // Pequeña pausa para asegurar que el token esté disponible
+        
+        try {
+            val token = TokenManager.getAuthHeader()
+            android.util.Log.d("DiarioScreen", "=== CARGANDO HISTORIAL ===")
+            android.util.Log.d("DiarioScreen", "Token disponible: ${token != null}")
+            
+            if (token != null) {
+                android.util.Log.d("DiarioScreen", "Llamando a getUserTracking...")
+                
+                val response = RetrofitClient.apiService.getUserTracking(
+                    token = token,
+                    limit = 10
+                )
+                
+                android.util.Log.d("DiarioScreen", "Response code: ${response.code()}")
+                android.util.Log.d("DiarioScreen", "Response successful: ${response.isSuccessful}")
+                
+                if (response.isSuccessful) {
+                    val trackingList = response.body()
+                    android.util.Log.d("DiarioScreen", "Body recibido: $trackingList")
+                    
+                    if (trackingList != null) {
+                        android.util.Log.d("DiarioScreen", "Count: ${trackingList.count}")
+                        android.util.Log.d("DiarioScreen", "Tracking list size: ${trackingList.tracking.size}")
+                        
+                        historyEntries = trackingList.tracking
+                        
+                        android.util.Log.d("DiarioScreen", "✅ Loaded ${historyEntries.size} entries")
+                        historyEntries.forEachIndexed { index, entry ->
+                            android.util.Log.d("DiarioScreen", "  [$index] mood=${entry.mood}, notes=${entry.notes}, date=${entry.date}")
+                        }
+                    } else {
+                        android.util.Log.e("DiarioScreen", "❌ Response body is null")
+                    }
+                } else {
+                    val errorBody = response.errorBody()?.string()
+                    android.util.Log.e("DiarioScreen", "❌ Error response: $errorBody")
+                }
+            } else {
+                android.util.Log.e("DiarioScreen", "❌ Token is null - user not logged in?")
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("DiarioScreen", "❌ Exception loading history", e)
+            android.util.Log.e("DiarioScreen", "Exception type: ${e.javaClass.simpleName}")
+            android.util.Log.e("DiarioScreen", "Exception message: ${e.message}")
+            e.printStackTrace()
+        } finally {
+            isLoadingHistory = false
+            android.util.Log.d("DiarioScreen", "=== FIN CARGA HISTORIAL ===")
+        }
+    }
+    
+    // Función para guardar la emoción en el backend
+    fun saveEmotion() {
+        if (selectedEmotion.isEmpty()) return
+        
+        isLoading = true
+        scope.launch {
+            try {
+                val token = TokenManager.getAuthHeader()
+                if (token == null) {
+                    snackbarHostState.showSnackbar(
+                        "Error: No hay sesión activa",
+                        duration = SnackbarDuration.Short
+                    )
+                    return@launch
+                }
+                
+                // Mapear las emociones a los valores del backend
+                val moodMap = mapOf(
+                    "feliz" to "bien",
+                    "triste" to "mal",
+                    "enojado" to "muy_mal",
+                    "relajado" to "muy_bien",
+                    "neutral" to "neutral"
+                )
+                
+                val moodValue = moodMap[selectedEmotion] ?: "neutral"
+                
+                android.util.Log.d("DiarioScreen", "Selected emotion: $selectedEmotion")
+                android.util.Log.d("DiarioScreen", "Mapped mood value: $moodValue")
+                
+                val trackingRequest = TrackingRequest(
+                    mood = moodValue,
+                    notes = description.takeIf { it.isNotBlank() },
+                    activities = null,
+                    date = null // El backend generará la fecha
+                )
+                
+                android.util.Log.d("DiarioScreen", "Sending request: $trackingRequest")
+                
+                val response = RetrofitClient.apiService.createTracking(token, trackingRequest)
+                
+                android.util.Log.d("DiarioScreen", "Save response code: ${response.code()}")
+                
+                if (response.isSuccessful) {
+                    snackbarHostState.showSnackbar(
+                        "✅ Emoción guardada exitosamente",
+                        duration = SnackbarDuration.Short
+                    )
+                    // Limpiar campos
+                    description = ""
+                    selectedEmotion = ""
+                    // Recargar historial
+                    refreshTrigger++
+                } else {
+                    snackbarHostState.showSnackbar(
+                        "Error al guardar: ${response.code()}",
+                        duration = SnackbarDuration.Long
+                    )
+                }
+            } catch (e: Exception) {
+                snackbarHostState.showSnackbar(
+                    "Error de conexión: ${e.message}",
+                    duration = SnackbarDuration.Long
+                )
+            } finally {
+                isLoading = false
+            }
+        }
+    }
 
     // Diálogo de confirmación de cerrar sesión
     if (showLogoutDialog) {
@@ -44,9 +187,7 @@ fun DiarioScreen(navController: NavController) {
                 Button(
                     onClick = {
                         showLogoutDialog = false
-                        navController.navigate(Routes.Login.route) {
-                            popUpTo(0) { inclusive = true }
-                        }
+                        onLogout()
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.primary
@@ -64,6 +205,7 @@ fun DiarioScreen(navController: NavController) {
     }
 
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = {
@@ -133,19 +275,18 @@ fun DiarioScreen(navController: NavController) {
 
             // Botón guardar
             SaveButton(
-                enabled = selectedEmotion.isNotEmpty(),
-                onClick = {
-                    // Aquí guardarías la entrada en la base de datos
-                    // Por ahora solo mostramos un mensaje
-                    description = ""
-                    selectedEmotion = ""
-                }
+                enabled = selectedEmotion.isNotEmpty() && !isLoading,
+                onClick = { saveEmotion() },
+                isLoading = isLoading
             )
 
             Spacer(Modifier.height(32.dp))
 
             // Historial de emociones
-            MoodHistorySection()
+            MoodHistorySection(
+                entries = historyEntries,
+                isLoading = isLoadingHistory
+            )
         }
     }
 }
@@ -312,7 +453,8 @@ fun DescriptionCard(
 @Composable
 fun SaveButton(
     enabled: Boolean,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    isLoading: Boolean = false
 ) {
     Button(
         onClick = onClick,
@@ -333,19 +475,26 @@ fun SaveButton(
             pressedElevation = 8.dp
         )
     ) {
-        Text(
-            if (enabled) "💾 Guardar Emoción" else "Selecciona una emoción primero",
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.SemiBold
-        )
+        if (isLoading) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(24.dp),
+                color = MaterialTheme.colorScheme.onPrimary
+            )
+        } else {
+            Text(
+                if (enabled) "💾 Guardar Emoción" else "Selecciona una emoción primero",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold
+            )
+        }
     }
 }
 
 @Composable
-fun MoodHistorySection() {
-    // Por ahora mostramos un placeholder
-    // En una implementación real, aquí cargarías el historial de la base de datos
-
+fun MoodHistorySection(
+    entries: List<com.example.peacenest.network.models.TrackingEntry>,
+    isLoading: Boolean
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
@@ -377,18 +526,135 @@ fun MoodHistorySection() {
                 )
             }
 
-            // Placeholder del historial
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(120.dp),
-                contentAlignment = Alignment.Center
-            ) {
+            // Contenido
+            if (isLoading) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(100.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+            } else if (entries.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(100.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        "Aún no has guardado ninguna emoción\n¡Empieza ahora!",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                    )
+                }
+            } else {
+                // Mostrar entradas
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    entries.take(5).forEach { entry ->
+                        MoodHistoryItem(entry)
+                    }
+                    
+                    if (entries.size > 5) {
+                        Text(
+                            "y ${entries.size - 5} más...",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                            modifier = Modifier.padding(top = 4.dp)
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun MoodHistoryItem(entry: com.example.peacenest.network.models.TrackingEntry) {
+    // Mapear mood a emoji y nombre
+    val moodEmoji = when (entry.mood) {
+        "muy_bien" -> "😄"
+        "bien" -> "😊"
+        "neutral" -> "😐"
+        "mal" -> "😔"
+        "muy_mal" -> "😢"
+        else -> "😐"
+    }
+    
+    val moodName = when (entry.mood) {
+        "muy_bien" -> "Muy Feliz"
+        "bien" -> "Feliz"
+        "neutral" -> "Normal"
+        "mal" -> "Triste"
+        "muy_mal" -> "Muy Triste"
+        else -> "Desconocido"
+    }
+    
+    // Formatear fecha
+    val date = if (entry.date != null) {
+        try {
+            val parts = entry.date.split("T")[0].split("-")
+            if (parts.size >= 3) {
+                "${parts[2]}/${parts[1]}/${parts[0]}"
+            } else {
+                "Fecha desconocida"
+            }
+        } catch (e: Exception) {
+            "Fecha desconocida"
+        }
+    } else {
+        "Fecha desconocida"
+    }
+    
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 2.dp
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Emoji
+            Text(
+                moodEmoji,
+                style = MaterialTheme.typography.headlineMedium,
+                modifier = Modifier.padding(end = 12.dp)
+            )
+            
+            // Información
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    "Aquí verás tu historial de emociones\n(Próximamente)",
-                    style = MaterialTheme.typography.bodyMedium,
+                    moodName,
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                
+                if (!entry.notes.isNullOrBlank()) {
+                    Text(
+                        entry.notes,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 2
+                    )
+                }
+                
+                Text(
+                    date,
+                    style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                    modifier = Modifier.padding(top = 4.dp)
                 )
             }
         }

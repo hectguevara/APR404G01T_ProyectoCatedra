@@ -19,7 +19,7 @@ import com.example.peacenest.navigation.Routes
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(navController: NavController) {
+fun HomeScreen(navController: NavController, onLogout: () -> Unit = {}) {
     var showLogoutDialog by remember { mutableStateOf(false) }
     // Obtener una frase aleatoria cada vez que se carga la pantalla
     val dailyPhrase = remember { DailyPhrasesRepository.getRandomPhrase() }
@@ -45,10 +45,7 @@ fun HomeScreen(navController: NavController) {
                 Button(
                     onClick = {
                         showLogoutDialog = false
-                        // Navegar al login y limpiar el stack
-                        navController.navigate(Routes.Login.route) {
-                            popUpTo(0) { inclusive = true }
-                        }
+                        onLogout()
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.primary

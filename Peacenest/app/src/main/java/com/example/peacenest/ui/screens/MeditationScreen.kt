@@ -19,7 +19,7 @@ import com.example.peacenest.navigation.Routes
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MeditationScreen(navController: NavController) {
+fun MeditationScreen(navController: NavController, onLogout: () -> Unit = {}) {
     var showLogoutDialog by remember { mutableStateOf(false) }
 
     // Diálogo de confirmación de cerrar sesión
@@ -43,9 +43,7 @@ fun MeditationScreen(navController: NavController) {
                 Button(
                     onClick = {
                         showLogoutDialog = false
-                        navController.navigate(Routes.Login.route) {
-                            popUpTo(0) { inclusive = true }
-                        }
+                        onLogout()
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.primary
@@ -192,18 +190,8 @@ fun MeditationSessionsList(navController: NavController) {
             MeditationSessionCard(
                 session = session,
                 onCardClick = {
-                    // Navegar a reproductor según el tipo
-                    when (session.type) {
-                        "youtube" -> {
-                            // navController.navigate("${Routes.MeditationPlayer.route}/${session.id}")
-                        }
-                        "pixabay" -> {
-                            // navController.navigate("${Routes.AudioPlayer.route}/${session.id}")
-                        }
-                        "mindfulness" -> {
-                            // navController.navigate("${Routes.Mindfulness.route}/${session.id}")
-                        }
-                    }
+                    // Navegar al ejercicio de meditación
+                    navController.navigate("${Routes.MeditationExercise.route}/${session.id}")
                 }
             )
         }

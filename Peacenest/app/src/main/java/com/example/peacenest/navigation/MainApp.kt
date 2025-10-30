@@ -21,6 +21,8 @@ import androidx.compose.foundation.layout.padding
 import com.example.peacenest.ui.screens.HomeScreen
 import com.example.peacenest.ui.screens.DiarioScreen
 import com.example.peacenest.ui.screens.BreathingScreen
+import com.example.peacenest.ui.screens.BreathingExerciseScreen
+import com.example.peacenest.ui.screens.MeditationExerciseScreen
 import com.example.peacenest.ui.screens.DailyTipsScreen
 import com.example.peacenest.ui.screens.MenuScreen
 import com.example.peacenest.ui.screens.PerfilScreen
@@ -28,9 +30,10 @@ import com.example.peacenest.ui.screens.MeditationScreen
 import com.example.peacenest.ui.screens.EducationalScreen
 import com.example.peacenest.ui.screens.FavoritesScreen
 import com.example.peacenest.ui.screens.ShopScreen
+import com.example.peacenest.ui.settings.SettingsScreen
 
 @Composable
-fun MainApp() {
+fun MainApp(onLogout: () -> Unit = {}) {
     val navController = rememberNavController()
 
     Scaffold(
@@ -44,34 +47,45 @@ fun MainApp() {
             modifier = Modifier.padding(paddingValues)
         ) {
             composable(Routes.Home.route) {
-                HomeScreen(navController = navController)
+                HomeScreen(navController = navController, onLogout = onLogout)
             }
             composable(Routes.Diario.route) {
-                DiarioScreen(navController = navController)
+                DiarioScreen(navController = navController, onLogout = onLogout)
             }
             composable(Routes.Bienestar.route) {
-                BreathingScreen(navController = navController)
+                BreathingScreen(navController = navController, onLogout = onLogout)
+            }
+            composable("${Routes.BreathingExercise.route}/{techniqueId}") { backStackEntry ->
+                val techniqueId = backStackEntry.arguments?.getString("techniqueId") ?: "1"
+                BreathingExerciseScreen(navController = navController, techniqueId = techniqueId)
             }
             composable(Routes.Menu.route) {
-                MenuScreen(navController = navController)
+                MenuScreen(navController = navController, onLogout = onLogout)
             }
             composable(Routes.Perfil.route) {
-                PerfilScreen(navController = navController)
+                PerfilScreen(navController = navController, onLogout = onLogout)
             }
             composable(Routes.Meditation.route) {
-                MeditationScreen(navController = navController)
+                MeditationScreen(navController = navController, onLogout = onLogout)
+            }
+            composable("${Routes.MeditationExercise.route}/{meditationId}") { backStackEntry ->
+                val meditationId = backStackEntry.arguments?.getString("meditationId") ?: "1"
+                MeditationExerciseScreen(navController = navController, meditationId = meditationId)
             }
             composable(Routes.Articles.route) {
-                EducationalScreen(navController = navController)
+                EducationalScreen(navController = navController, onLogout = onLogout)
             }
             composable(Routes.Shop.route) {
-                ShopScreen(navController = navController)
+                ShopScreen(navController = navController, onLogout = onLogout)
             }
             composable(Routes.DailyTips.route) {
-                DailyTipsScreen(navController = navController)
+                DailyTipsScreen(navController = navController, onLogout = onLogout)
             }
             composable(Routes.Favorites.route) {
-                FavoritesScreen(navController = navController)
+                FavoritesScreen(navController = navController, onLogout = onLogout)
+            }
+            composable(Routes.Settings.route) {
+                SettingsScreen(navController = navController)
             }
         }
     }

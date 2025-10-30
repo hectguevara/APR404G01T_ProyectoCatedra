@@ -19,7 +19,7 @@ import com.example.peacenest.navigation.Routes
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ShopScreen(navController: NavController) {
+fun ShopScreen(navController: NavController, onLogout: () -> Unit = {}) {
     var showLogoutDialog by remember { mutableStateOf(false) }
     var userPoints by remember { mutableStateOf(100) } // Puntos iniciales
     var ownedItems by remember { mutableStateOf(setOf<String>()) }
@@ -51,9 +51,7 @@ fun ShopScreen(navController: NavController) {
                 Button(
                     onClick = {
                         showLogoutDialog = false
-                        navController.navigate(Routes.Login.route) {
-                            popUpTo(0) { inclusive = true }
-                        }
+                        onLogout()
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.primary

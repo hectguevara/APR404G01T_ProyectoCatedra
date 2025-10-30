@@ -51,7 +51,10 @@ class Tracking {
 
       // Limitar resultados
       const limit = options.limit || 30;
-      query = query.orderBy('date', 'desc').limit(limit);
+      
+      // TEMPORAL: Sin orderBy para evitar necesidad de índice
+      // query = query.orderBy('date', 'desc').limit(limit);
+      query = query.limit(limit);
 
       const snapshot = await query.get();
 
@@ -59,10 +62,19 @@ class Tracking {
         return [];
       }
 
-      return snapshot.docs.map(doc => ({
+      // Ordenar en memoria después de obtener los datos
+      const results = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       }));
+      
+      // Ordenar por fecha descendente (más reciente primero)
+      results.sort((a, b) => {
+        if (!a.date || !b.date) return 0;
+        return new Date(b.date) - new Date(a.date);
+      });
+
+      return results;
     } catch (error) {
       throw error;
     }
